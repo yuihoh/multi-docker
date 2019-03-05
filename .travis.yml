@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t yuihoh/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run yuihoh/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t yuihoh/multi-client ./client
+  - docker build -t yuihoh/multi-nginx ./nginx
+  - docker build -t yuihoh/multi-server ./server
+  - docker build -t yuihoh/multi-worker ./worker
+   # log in to docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+   # take those images and push them to docker hub
+  - docker push yuihoh/multi-client
+  - docker push yuihoh/multi-nginx
+  - docker push yuihoh/multi-server
+  - docker push yuihoh/multi-worker
+
+
+
